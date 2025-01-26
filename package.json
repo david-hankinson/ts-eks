@@ -2,10 +2,12 @@
     "name": "ts-eks",
     "main": "index.ts",
     "devDependencies": {
+        "@types/js-yaml": "^4.0.9",
         "@types/node": "^18",
         "typescript": "^5.0.0"
     },
     "dependencies": {
+        "@aws-cdk/core": "^1.203.0",
         "@pulumi/aws": "^6.66.3",
         "@pulumi/pulumi": "^3.113.0"
     }

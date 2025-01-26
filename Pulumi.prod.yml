@@ -6,15 +6,15 @@ description: Networking layer for the prod-pulumi-modular-vpc
 
 instanceTenancy: "default"
 
-vpcCidr: "10.0.0.0/16"
-publicSubnets: ["10.0.1.0/24", "10.0.2.0/24"]
-privateSubnets: ["10.0.3.0/24", "10.0.4.0/24"]
-securityGroups: ["sg-12345678"]
-internetGatewayName: ["igw-12345678"]
+vpcCidr: "10.1.0.0/16"
+publicSubnets: ["10.1.1.0/24", "10.1.2.0/24"]
+privateSubnets: ["10.1.3.0/24", "10.1.4.0/24"]
+securityGroups: ["prod-sg-12345678"]
+internetGatewayName: ["prod-igw-12345678"]
 enableDnsHostnames: true
 enableDnsSupport: true
 
-tags: { "Name": "demo-vpc" }
+tags: { "Name": "prod-demo-vpc" }
 
 
 
