@@ -1,4 +1,3 @@
-import { ec2 } from "@pulumi/aws";
 import * as aws from "@pulumi/aws";
 import * as pulumi from "@pulumi/pulumi";
 
@@ -42,7 +41,7 @@ export class AwsWebVpc extends pulumi.ComponentResource {
 
     // Create the VPC
     // TODO - READ THE DOCS AND FOUND OUT HOW TODO THIS
-    const vpc = new ec2.Vpc(vpcName, {
+    const vpc = new aws.ec2.Vpc(vpcName, {
         cidrBlock: cidrBlock,
         instanceTenancy: instanceTenancy,
         enableDnsHostnames: enableDnsHostnames,
@@ -54,5 +53,6 @@ export class AwsWebVpc extends pulumi.ComponentResource {
 
     }
     // Export the outputs
+
 }
 
