@@ -24,10 +24,13 @@ export interface VpcArgs {
 // Here, a member of the team with network skills can build a VPC that works for the organisation.
 export class AwsWebVpc extends pulumi.ComponentResource {
 
-    public readonly vpcId: pulumi.Output<string> = pulumi.output("");
+    public readonly vpcId: pulumi.Output<string>;
+    public readonly vpcCidr: pulumi.Output<string>;
     public readonly subnetIds: pulumi.Output<string>[] = [];
-    public readonly rdsSecurityGroupIds: pulumi.Output<string>[] = [];
-    public readonly feSecurityGroupIds: pulumi.Output<string>[] = [];
+    public readonly vpcSecurityGroupIds: pulumi.Output<string>[] = [];
+    public readonly internetGatewayId: pulumi.Output<string>;
+    public readonly routeTableId: pulumi.Output<string>;
+    public readonly routeTableAssociationIds: pulumi.Output<string>[] = [];
 
     constructor(name: string, args: VpcArgs, opts?: pulumi.ComponentResourceOptions) {
     super("custom:resource:VPC", name, args, opts);
@@ -40,19 +43,25 @@ export class AwsWebVpc extends pulumi.ComponentResource {
     const enableDnsSupport = args.enableDnsSupport || true;
 
     // Create the VPC
-    // TODO - READ THE DOCS AND FOUND OUT HOW TODO THIS
     const vpc = new aws.ec2.Vpc(vpcName, {
         cidrBlock: cidrBlock,
         instanceTenancy: instanceTenancy,
         enableDnsHostnames: enableDnsHostnames,
         enableDnsSupport: enableDnsSupport,
         tags: { "Name": vpcName },
-      }, { parent: this });
+    }, { parent: this });
+
+    const igw = new aws.ec2.InternetGateway(`${name}-igw`, {
+        vpcId: vpc.id,
+        tags: { "Name": `${name}-igw` },
+    }, { parent: this });
 
     this.vpcId = vpc.id;
+    this.vpcCidr = vpc.cidrBlock;
+    this.internetGatewayId = igw.id;
 
     }
-    // Export the outputs
+
 
 }
 
