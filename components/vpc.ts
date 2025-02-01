@@ -92,6 +92,55 @@ export class AwsWebVpc extends pulumi.ComponentResource {
         return privateSubnets;
     });
 
+    // Elastic IP
+    const eip = new aws.ec2.Eip(`${name}-eip`, {
+        vpc: true,
+    }, { parent: this });
+
+    // NAT Gateway
+    const natGateway = new aws.ec2.NatGateway(`${name}-nat-gateway`, {
+        allocationId: eip.id,
+        subnetId: publicSubnetsCidrs[0],
+        tags: { "Name": `${name}-nat-gateway` },
+    }, { parent: this });
+
+    // Public Route table
+    const publicRouteTable = new aws.ec2.RouteTable(`${name}-public-route-table`, {
+        vpcId: vpc.id,
+        routes: [{
+            cidrBlock: vpc.cidrBlock,
+            gatewayId: igw.id,
+        }],
+        tags: { "Name": `${name}-public-route-table` },
+    }, { parent: this });
+
+    // Private Route table
+    const privateRouteTable = new aws.ec2.RouteTable(`${name}-private-route-table`, {
+        vpcId: vpc.id,
+        tags: { "Name": `${name}-private-route-table` },
+    }, { parent: this });
+
+    // Public Route table association
+    publicSubnetsCidrs.map((publicSubnetsCidrs, index) => {
+        const publicRouteTableAssociation = new aws.ec2.RouteTableAssociation(`${name}-public-route-table-association-${index}`, {
+            subnetId: publicSubnetsCidrs,
+            routeTableId: publicRouteTable.id,
+        }, { parent: this });
+        return publicRouteTableAssociation;
+    });
+
+    // Private Route table association
+
+    privateSubnetsCidrs.map((privateSubnetsCidrs, index) => {
+        const privateRouteTableAssociation = new aws.ec2.RouteTableAssociation(`${name}-private-route-table-association-${index}`, {
+            subnetId: privateSubnetsCidrs,
+            routeTableId: privateRouteTable.id,
+        }, { parent: this });
+        return privateRouteTableAssociation;
+    });
+    
+
+
 
     this.vpcId = vpc.id;
     this.vpcCidr = vpc.cidrBlock;

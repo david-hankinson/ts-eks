@@ -8,6 +8,7 @@
     "ts-node": "^10.9.1"
   },
   "scripts": {
-    "start": "./node_modules/ts-node/dist/bin.js index.ts"
+    "start": "./node_modules/ts-node/dist/bin.js index.ts",
+    "pulumi-destroy": "pulumi destroy --stack non-prod && pulumi destroy --stack prod"
   }
 }
