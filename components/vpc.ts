@@ -26,11 +26,13 @@ export class AwsWebVpc extends pulumi.ComponentResource {
 
     public readonly vpcId: pulumi.Output<string>;
     public readonly vpcCidr: pulumi.Output<string>;
-    public readonly subnetIds: pulumi.Output<string>[] = [];
-    public readonly vpcSecurityGroupIds: pulumi.Output<string>[] = [];
+    public readonly publicSubnetsCidrs: pulumi.Output<string>[] = [];
+    public readonly privateSubnetsCidrs: pulumi.Output<string>[] = [];
+
+    // public readonly vpcSecurityGroupIds: pulumi.Output<string>[] = [];
     public readonly internetGatewayId: pulumi.Output<string>;
-    public readonly routeTableId: pulumi.Output<string>;
-    public readonly routeTableAssociationIds: pulumi.Output<string>[] = [];
+    // public readonly routeTableId: pulumi.Output<string>;
+    // public readonly routeTableAssociationIds: pulumi.Output<string>[] = [];
 
     // Output the public and private subnet IDs from const publicSubnets as a pulumi.Output<string>[]
     
@@ -68,7 +70,7 @@ export class AwsWebVpc extends pulumi.ComponentResource {
     publicSubnetsCidrs.map((publicSubnetsCidrs, index) => {
         const publicSubnets = new aws.ec2.Subnet(`${name}-public-subnet-${index}`, {
             vpcId: vpc.id,
-            cidrBlock: publicSubnetsCidrs[index],
+            cidrBlock: publicSubnetsCidrs,
             availabilityZone: aws.getAvailabilityZones().then(azs => azs.names[index]),
             // public ip = true
             mapPublicIpOnLaunch: true,
@@ -78,10 +80,10 @@ export class AwsWebVpc extends pulumi.ComponentResource {
     });
 
     // Private subnets
-    privateSubnetsCidrs.map((cidr, index) => {
+    privateSubnetsCidrs.map((privateSubnetsCidrs, index) => {
         const privateSubnets = new aws.ec2.Subnet(`${name}-private-subnet-${index}`, {
             vpcId: vpc.id,
-            cidrBlock: privateSubnetsCidrs[index],
+            cidrBlock: privateSubnetsCidrs,
             availabilityZone: aws.getAvailabilityZones().then(azs => azs.names[index]),
             // public ip = false
             mapPublicIpOnLaunch: false,
