@@ -8,8 +8,8 @@ export const nonprodDemoVpcArgs: vpcModule.VpcArgs = {
     instanceTenancy: "default",
 
     vpcCidr: "10.0.0.0/16",
-    publicSubnets: ["10.0.1.0/24", "10.0.2.0/24"],
-    privateSubnets: ["10.0.3.0/24", "10.0.4.0/24"],
+    publicSubnetsCidrs: ["10.0.1.0/24", "10.0.2.0/24"],
+    privateSubnetsCidrs: ["10.0.3.0/24", "10.0.4.0/24"],
     securityGroups: ["sg-12345678"],
     internetGatewayName: ["igw-12345678"],
     enableDnsHostnames: true,
@@ -21,8 +21,8 @@ export const prodDemoVpcArgs: vpcModule.VpcArgs = {
         instanceTenancy: "default",
     
         vpcCidr: "10.0.0.0/16",
-        publicSubnets: ["10.0.1.0/24", "10.0.2.0/24"],
-        privateSubnets: ["10.0.3.0/24", "10.0.4.0/24"],
+        publicSubnetsCidrs: ["10.0.1.0/24", "10.0.2.0/24"],
+        privateSubnetsCidrs: ["10.0.3.0/24", "10.0.4.0/24"],
         securityGroups: ["sg-12345678"],
         internetGatewayName: ["igw-12345678"],
         enableDnsHostnames: true,

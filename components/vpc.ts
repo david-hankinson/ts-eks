@@ -8,8 +8,8 @@ export interface VpcArgs {
     
     vpcCidr: string
     
-    publicSubnets: string[];
-    privateSubnets: string[];
+    publicSubnetsCidrs: string[];
+    privateSubnetsCidrs: string[];
     
     securityGroups?: string[];
     
@@ -32,17 +32,24 @@ export class AwsWebVpc extends pulumi.ComponentResource {
     public readonly routeTableId: pulumi.Output<string>;
     public readonly routeTableAssociationIds: pulumi.Output<string>[] = [];
 
+    // Output the public and private subnet IDs from const publicSubnets as a pulumi.Output<string>[]
+    
+
     constructor(name: string, args: VpcArgs, opts?: pulumi.ComponentResourceOptions) {
     super("custom:resource:VPC", name, args, opts);
 
-    const vpcName = `${name}-vpc`;
-
-    const cidrBlock = args.vpcCidr || "10.0.0.0/16";
     const instanceTenancy = args.instanceTenancy || "default";
+
+    const vpcName = `${name}-vpc`;
+    const cidrBlock = args.vpcCidr || "10.0.0.0/16";
+
+    const publicSubnetsCidrs = args.publicSubnetsCidrs
+    const privateSubnetsCidrs = args.publicSubnetsCidrs
+
     const enableDnsHostnames = args.enableDnsHostnames || true;
     const enableDnsSupport = args.enableDnsSupport || true;
 
-    // Create the VPC
+    // VPC
     const vpc = new aws.ec2.Vpc(vpcName, {
         cidrBlock: cidrBlock,
         instanceTenancy: instanceTenancy,
@@ -51,10 +58,38 @@ export class AwsWebVpc extends pulumi.ComponentResource {
         tags: { "Name": vpcName },
     }, { parent: this });
 
+    // Internet gateway
     const igw = new aws.ec2.InternetGateway(`${name}-igw`, {
         vpcId: vpc.id,
         tags: { "Name": `${name}-igw` },
     }, { parent: this });
+
+    // Public subnets
+    publicSubnetsCidrs.map((publicSubnetsCidrs, index) => {
+        const publicSubnets = new aws.ec2.Subnet(`${name}-public-subnet-${index}`, {
+            vpcId: vpc.id,
+            cidrBlock: publicSubnetsCidrs[index],
+            availabilityZone: aws.getAvailabilityZones().then(azs => azs.names[index]),
+            // public ip = true
+            mapPublicIpOnLaunch: true,
+            tags: { "Name": `${name}-public-subnet-${index}` },
+        }, { parent: this });
+        return publicSubnets;
+    });
+
+    // Private subnets
+    privateSubnetsCidrs.map((cidr, index) => {
+        const privateSubnets = new aws.ec2.Subnet(`${name}-private-subnet-${index}`, {
+            vpcId: vpc.id,
+            cidrBlock: privateSubnetsCidrs[index],
+            availabilityZone: aws.getAvailabilityZones().then(azs => azs.names[index]),
+            // public ip = false
+            mapPublicIpOnLaunch: false,
+            tags: { "Name": `${name}-private-subnet-${index}` },
+        }, { parent: this });
+        return privateSubnets;
+    });
+
 
     this.vpcId = vpc.id;
     this.vpcCidr = vpc.cidrBlock;
