@@ -38,7 +38,7 @@ export class AwsWebVpc extends pulumi.ComponentResource {
     public readonly vpcSecurityGroupName: pulumi.Output<string>;
     
     public readonly internetGatewayId: pulumi.Output<string>;
-    // // public readonly natGatewayId: pulumi.Output<string>;
+    public readonly natGateways: { [key: string]: aws.ec2.NatGateway } = {};
 
     constructor(name: string, args: VpcArgs, opts?: pulumi.ComponentResourceOptions) {
     super("custom:resource:VPC", name, args, opts);
@@ -103,12 +103,22 @@ export class AwsWebVpc extends pulumi.ComponentResource {
         domain: "vpc",
     }, { parent: this });
 
-    // // NAT Gateway
+    // NAT Gateway
     // const natGateway = new aws.ec2.NatGateway(`${name}-nat-gateway`, {
     //     allocationId: `${name}-nat-gateway"`,
     //     subnetId: this.publicSubnets[`${name}-public-subnet-1`].arn,
     //     tags: { "Name": `${name}-nat-gateway` },
     // }, { parent: this });
+
+    this.natGateways = {};
+    for (let i = 0; i < Object.keys(this.publicSubnets).length; i++) {
+        // create a nat gateway for each public subnet
+        const natGateways = new aws.ec2.NatGateway(`${name}-nat-gateway-${i + 1}`, {
+            allocationId: eip.id,
+            subnetId: this.publicSubnets[`${name}-public-subnet-${i + 1}`].id,
+            tags: { "Name": `${name}-nat-gateway-${i + 1}` },
+        }, { parent: this });
+    }
 
     // Public Route table
     const publicRouteTable = new aws.ec2.RouteTable(`${name}-public-route-table`, {
@@ -120,24 +130,24 @@ export class AwsWebVpc extends pulumi.ComponentResource {
         tags: { "Name": `${name}-public-route-table` },
     }, { parent: this });
 
-    // // Private Route table
-    // const privateRouteTable = new aws.ec2.RouteTable(`${name}-private-route-table`, {
-    //     vpcId: vpc.id,
-    //     tags: { "Name": `${name}-private-route-table` },
-    // }, { parent: this });
+    // Private Route table
+    const privateRouteTable = new aws.ec2.RouteTable(`${name}-private-route-table`, {
+        vpcId: vpc.id,
+        tags: { "Name": `${name}-private-route-table` },
+    }, { parent: this });
 
     // // Public Route table association
-    // for (const [index, subnet] of publicSubnetsCidrs.entries()) {
+    // for (const [index, subnet] of Object.entries(this.publicSubnets)) {
     //     const publicRouteTableAssociation = new aws.ec2.RouteTableAssociation(`${name}-public-route-table-association-${index}`, {
-    //         subnetId: subnet,
+    //         subnetId: subnet.id,
     //         routeTableId: publicRouteTable.id,
     //     }, { parent: this });
     // }
 
     // // Private Route table association
-    // for (const [index, subnet] of privateSubnetsCidrs.entries()) {
+    // for (const [index, subnet] of Object.entries(this.privateSubnets)) {
     //     const privateRouteTableAssociation = new aws.ec2.RouteTableAssociation(`${name}-private-route-table-association-${index}`, {
-    //         subnetId: subnet,
+    //         subnetId: subnet.id,
     //         routeTableId: privateRouteTable.id,
     //     }, { parent: this });
     // }
@@ -152,7 +162,7 @@ export class AwsWebVpc extends pulumi.ComponentResource {
 
     this.vpcId = vpc.id;
     this.vpcCidr = vpc.cidrBlock;
-    //.this.natGatewayId = natGateway.id;
+    //this.natGatewayId = natGateway.id;
     this.vpcSecurityGroupName = vpcSecurityGroup.name;
     this.vpcSecurityGroupId = vpcSecurityGroup.id;
     this.internetGatewayId = igw.id;
