@@ -1,0 +1,3 @@
+strict digraph {
+    Resource0 [label="urn:pulumi:non-prod::ts-eks::pulumi:pulumi:Stack::ts-eks-non-prod"];
+}

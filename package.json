@@ -9,6 +9,7 @@
   },
   "scripts": {
     "start": "./node_modules/ts-node/dist/bin.js index.ts",
+    "pulumi-preview": "pulumi preview --stack prod && pulumi up --stack non-prod",
     "pulumi-destroy": "pulumi destroy --stack non-prod && pulumi destroy --stack prod"
   }
 }
