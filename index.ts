@@ -7,10 +7,10 @@ import * as automation from "@pulumi/pulumi/automation";
 export const nonprodDemoVpcArgs: vpcModule.VpcArgs = {
     instanceTenancy: "default",
 
-    vpcCidr: "10.2.0.0/16",
+    vpcCidr: "10.0.0.0/16",
 
-    publicSubnetsCidrs: ["10.2.1.0/24", "10.2.2.0/24"],
-    privateSubnetsCidrs: ["10.2.3.0/24", "10.2.4.0/24"],
+    publicSubnetsCidrs: ["10.0.1.0/24", "10.0.2.0/24"],
+    privateSubnetsCidrs: ["10.0.3.0/24", "10.0.4.0/24"],
 
     vpcSecurityGroupName: "sg-1",
     // internetGatewayId: "igw-1",
@@ -24,10 +24,10 @@ export const nonprodDemoVpcArgs: vpcModule.VpcArgs = {
 export const prodDemoVpcArgs: vpcModule.VpcArgs = {
     instanceTenancy: "default",
 
-    vpcCidr: "176.16.0.0/16",
+    vpcCidr: "192.168.0.0/16",
 
-    publicSubnetsCidrs: ["176.16.1.0/24", "176.16.2.0/24"],
-    privateSubnetsCidrs: ["176.16.3.0/24", "176.16.4.0/24"],
+    publicSubnetsCidrs: ["192.168.1.0/24", "192.168.2.0/24"],
+    privateSubnetsCidrs: ["192.168.3.0/24", "192.168.4.0/24"],
 
     vpcSecurityGroupName: "sg-2",
     // internetGatewayId: "igw-2",

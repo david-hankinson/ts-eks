@@ -49,7 +49,7 @@ export class AwsWebVpc extends pulumi.ComponentResource {
     const cidrBlock = args.vpcCidr || "10.0.0.0/16";
 
     const publicSubnetsCidrs = args.publicSubnetsCidrs
-    const privateSubnetsCidrs = args.publicSubnetsCidrs
+    const privateSubnetsCidrs = args.privateSubnetsCidrs
 
     // VPC
     const vpc = new aws.ec2.Vpc(vpcName, {
@@ -60,38 +60,61 @@ export class AwsWebVpc extends pulumi.ComponentResource {
         tags: { "Name": vpcName },
     }, { parent: this });
     
-    // Create public subnets
-    this.publicSubnets = {};
-    for (let i = 0; i < args.publicSubnetsCidrs.length; i++) {
-        const subnetCidr = args.publicSubnetsCidrs[i];
-        const subnetName = `${name}-public-subnet-${i + 1}`;
+    // // Create public subnets
+    // this.publicSubnets = {};
+    // for (let i = 0; i < args.publicSubnetsCidrs.length; i++) {
+    //     const subnetCidr = args.publicSubnetsCidrs[i];
+    //     const subnetName = `${name}-public-subnet-${i + 1}`;
         
-        // Create a new public subnet and add it to the publicSubnets object with a unique key
-        this.publicSubnets[subnetName] = new aws.ec2.Subnet(subnetName, {
+    //     // Create a new public subnet and add it to the publicSubnets object with a unique key
+    //     this.publicSubnets[subnetName] = new aws.ec2.Subnet(subnetName, {
+    //         vpcId: vpc.id,
+    //         cidrBlock: subnetCidr,
+    //         availabilityZone: aws.getAvailabilityZones().then(azs => azs.names[i]),
+    //         mapPublicIpOnLaunch: true,
+    //         tags: { "Name": subnetName },
+    //     }, { parent: this });
+    // }
+    // // Create public subnets and NAT Gateways
+
+        // Subnets, at least across two zones
+        const allZones = aws.getAvailabilityZones({state: "available"});
+        // Limiting to 2 zones for speed and to meet minimal requirements.
+        const subnets: pulumi.Output<string>[] = [];
+        const subnetNameBase = `${name}-subnet`;
+        // Non-prod subnets
+        for (let i = 0; i < 2; i++) {
+            const az = allZones.then(it => it.zoneIds[i]);
+            const subnetName = `${subnetNameBase}-nonprod-${i}`;
+            const vpcSubnet = new aws.ec2.Subnet(subnetName, {
+            assignIpv6AddressOnCreation: false,
             vpcId: vpc.id,
-            cidrBlock: subnetCidr,
-            availabilityZone: aws.getAvailabilityZones().then(azs => azs.names[i]),
             mapPublicIpOnLaunch: true,
+            cidrBlock: args.publicSubnetsCidrs[i],
+            availabilityZoneId: az,
             tags: { "Name": subnetName },
-        }, { parent: this });
-    }
+            }, { parent: this });
+            subnets.push(vpcSubnet.id);
+        }
 
-    // Create private subnets
-    this.privateSubnets = {};
-    for (let i = 0; i < args.privateSubnetsCidrs.length; i++) {
-        const subnetCidr = args.privateSubnetsCidrs[i];
-        const subnetName = `${name}-private-subnet-${i + 1}`;
-        
-        // Create a new private subnet and add it to the privateSubnets object with a unique key
-        this.privateSubnets[subnetName] = new aws.ec2.Subnet(subnetName, {
+        // Prod subnets
+        for (let i = 0; i < 2; i++) {
+            const az = allZones.then(it => it.zoneIds[i]);
+            const subnetName = `${subnetNameBase}-prod-${i}`;
+            const vpcSubnet = new aws.ec2.Subnet(subnetName, {
+            assignIpv6AddressOnCreation: false,
             vpcId: vpc.id,
-            cidrBlock: subnetCidr,
-            availabilityZone: aws.getAvailabilityZones().then(azs => azs.names[i]),
-            mapPublicIpOnLaunch: false,
+            mapPublicIpOnLaunch: true,
+            cidrBlock: args.privateSubnetsCidrs[i],
+            availabilityZoneId: az,
             tags: { "Name": subnetName },
-        }, { parent: this });
-    }
+            }, { parent: this });
+            subnets.push(vpcSubnet.id);
+        }
 
+    // Return private subnet ids as a string
+    // const privateSubnetIdsString = pulumi.all(privateSubnetIds).apply(ids => ids.join(","));
+    // const publicSubnetIdsString = pulumi.all(Object.values(this.publicSubnets).map(subnet => subnet.id)).apply(ids => ids.join(","));
     // Internet Gateway
     const igw = new aws.ec2.InternetGateway(`${name}-igw`, {
         vpcId: vpc.id,
@@ -110,15 +133,18 @@ export class AwsWebVpc extends pulumi.ComponentResource {
     //     tags: { "Name": `${name}-nat-gateway` },
     // }, { parent: this });
 
-    this.natGateways = {};
-    for (let i = 0; i < Object.keys(this.publicSubnets).length; i++) {
-        // create a nat gateway for each public subnet
-        const natGateways = new aws.ec2.NatGateway(`${name}-nat-gateway-${i + 1}`, {
-            allocationId: eip.id,
-            subnetId: this.publicSubnets[`${name}-public-subnet-${i + 1}`].id,
-            tags: { "Name": `${name}-nat-gateway-${i + 1}` },
-        }, { parent: this });
-    }
+    
+    // this.natGateways = {};
+    // for (let i = 0; i < Object.keys(this.publicSubnets).length; i++) {
+    //     // create a nat gateway for each public subnet
+        
+    //     const natGateway = new aws.ec2.NatGateway(`${name}-nat-gateway-${i + 1}`, {
+    //         allocationId: eip.id,
+    //         subnetId: publicSubnetIdsString.apply(ids => ids.split(",")[i]),
+    //         tags: { "Name": `${name}-nat-gateway-${i + 1}` },
+    //     }, { parent: this });
+    //     this.natGateways[`${name}-nat-gateway-${i + 1}`] = natGateway;
+    // }
 
     // Public Route table
     const publicRouteTable = new aws.ec2.RouteTable(`${name}-public-route-table`, {
@@ -136,21 +162,21 @@ export class AwsWebVpc extends pulumi.ComponentResource {
         tags: { "Name": `${name}-private-route-table` },
     }, { parent: this });
 
-    // // Public Route table association
-    // for (const [index, subnet] of Object.entries(this.publicSubnets)) {
-    //     const publicRouteTableAssociation = new aws.ec2.RouteTableAssociation(`${name}-public-route-table-association-${index}`, {
-    //         subnetId: subnet.id,
-    //         routeTableId: publicRouteTable.id,
-    //     }, { parent: this });
-    // }
+    // Public Route table association
+    for (const [index, subnet] of Object.entries(this.publicSubnets)) {
+        const publicRouteTableAssociation = new aws.ec2.RouteTableAssociation(`${name}-public-route-table-association-${index}`, {
+            subnetId: subnet.id,
+            routeTableId: publicRouteTable.id,
+        }, { parent: this });
+    }
 
-    // // Private Route table association
-    // for (const [index, subnet] of Object.entries(this.privateSubnets)) {
-    //     const privateRouteTableAssociation = new aws.ec2.RouteTableAssociation(`${name}-private-route-table-association-${index}`, {
-    //         subnetId: subnet.id,
-    //         routeTableId: privateRouteTable.id,
-    //     }, { parent: this });
-    // }
+    // Private Route table association
+    for (const [index, subnet] of Object.entries(this.privateSubnets)) {
+        const privateRouteTableAssociation = new aws.ec2.RouteTableAssociation(`${name}-private-route-table-association-${index}`, {
+            subnetId: subnet.id,
+            routeTableId: privateRouteTable.id,
+        }, { parent: this });
+    }
 
     // Security Group
     const vpcSecurityGroup = new aws.ec2.SecurityGroup(`${args.vpcSecurityGroupName}`, {
