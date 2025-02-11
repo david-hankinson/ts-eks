@@ -7,23 +7,24 @@ export interface VpcArgs {
     
     // AWS Account ID is inputed here
     instanceTenancy?: string;
+
+    // Availability Zones
+    availabilityZones: string[];
         
     // VPC CIDR
     vpcCidr: string
     publicSubnetsCidrs: string[];
     privateSubnetsCidrs: string[];
-    
-    // Availability Zones
-    availabilityZones: string[];
-
-    // Enable flow logs
-    enableFlowLogs?: boolean;
-    
-    // Optional tags
-    tags?: aws.Tags;
 
     // VPC Security Group Name
     vpcSecurityGroupName: string;
+
+    // Enable DNS Hostnames and support
+    enableDnsHostnames?: boolean;
+    enableDnsSupport?: boolean;
+    
+    // Optional tags
+    tags?: aws.Tags;
 }
 
 //  class that acts as a logical grouping of resources for a web VPC.
@@ -41,7 +42,7 @@ export class AwsWebVpc extends ComponentResource {
     publicRouteTable: aws.ec2.RouteTable;
     
     privateSubnets: aws.ec2.Subnet[] = [];
-    privateRouteTable: aws.ec2.RouteTable = [];
+    // privateRouteTable: aws.ec2.RouteTable = [];
 
     natGateways: aws.ec2.NatGateway[] = [];
     natElasitcIp: aws.ec2.Eip[] = [];
@@ -125,29 +126,29 @@ export class AwsWebVpc extends ComponentResource {
             this.privateSubnets.push(privateSubnet);
         }
 
-                // Adopt the default route table for the VPC, and adapt it for use with public subnets
-                {
-                    this.publicRouteTable = <aws.ec2.RouteTable>new aws.ec2.DefaultRouteTable(`${name}-public-rt`, {
-                        defaultRouteTableId: this.vpc.defaultRouteTableId,
-                        tags: {
-                            ...args.tags,
-                            Name: `${args.description} Public Route Table`,
-                        },
-                    }, { parent: this.vpc });
+        // Adopt the default route table for the VPC, and adapt it for use with public subnets
+        {
+            this.publicRouteTable = <aws.ec2.RouteTable>new aws.ec2.DefaultRouteTable(`${name}-public-rt`, {
+            defaultRouteTableId: this.vpc.defaultRouteTableId,
+            tags: {
+                ...args.tags,
+                Name: `${args.description} Public Route Table`,
+                  },
+            }, { parent: this.vpc });
         
-                    new aws.ec2.Route(`${name}-route-public-sn-to-ig`, {
-                        routeTableId: this.publicRouteTable.id,
-                        destinationCidrBlock: "0.0.0.0/0",
-                        gatewayId: this.internetGateway.id,
-                    }, { parent: this.publicRouteTable });
+            new aws.ec2.Route(`${name}-route-public-sn-to-ig`, {
+                routeTableId: this.publicRouteTable.id,
+                destinationCidrBlock: "0.0.0.0/0",
+                gatewayId: this.internetGateway.id,
+            }, { parent: this.publicRouteTable });
         
-                    this.publicSubnets.map((subnet, index) => {
-                        return new aws.ec2.RouteTableAssociation(`${name}-public-rta-${index + 1}`, {
-                            subnetId: subnet.id,
-                            routeTableId: this.publicRouteTable.id,
-                        }, { parent: this.publicRouteTable });
-                    });
-                }
+            this.publicSubnets.map((subnet, index) => {
+            return new aws.ec2.RouteTableAssociation(`${name}-public-rta-${index + 1}`, {
+                subnetId: subnet.id,
+                routeTableId: this.publicRouteTable.id,
+            }, { parent: this.publicRouteTable });
+            });
+        }
 
         // Create a NAT Gateway and appropriate route table for each private subnet
         

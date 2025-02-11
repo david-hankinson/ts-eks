@@ -9,17 +9,18 @@ export const nonprodDemoVpcArgs: vpcModule.VpcArgs = {
     
     instanceTenancy: "default",
 
+    availabilityZones: ["ca-central-1a", "ca-central-1b", "ca-central-1d"],
+
     vpcCidr: "10.0.0.0/16",
     publicSubnetsCidrs: ["10.0.1.0/24", "10.0.2.0/24"],
-    privateSubnetsCidrs: ["10.0.3.0/24", "10.0.4.0/24"],
+    privateSubnetsCidrs: ["10.0.3.0/24", "10.0.4.0/24"],   
 
     vpcSecurityGroupName: "sg-non-prod",
-    // internetGatewayId: "igw-1",
     
     enableDnsHostnames: true,
     enableDnsSupport: true,
 
-    tags: { "Name": "demo-vpc" }
+    tags: { "Name": "non-prod-vpc" }
 };
 
 export const prodDemoVpcArgs: vpcModule.VpcArgs = {
@@ -27,12 +28,13 @@ export const prodDemoVpcArgs: vpcModule.VpcArgs = {
 
     instanceTenancy: "default",
 
+    availabilityZones: ["ca-central-1a", "ca-central-1b", "ca-central-1d"],
+
     vpcCidr: "192.168.0.0/16",
     publicSubnetsCidrs: ["192.168.1.0/24", "192.168.2.0/24"],
     privateSubnetsCidrs: ["192.168.3.0/24", "192.168.4.0/24"],
 
     vpcSecurityGroupName: "sg-prod",
-    // internetGatewayId: "igw-2",
     
     enableDnsHostnames: true,
     enableDnsSupport: true,
