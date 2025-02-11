@@ -5,14 +5,15 @@ import * as automation from "@pulumi/pulumi/automation";
 
 
 export const nonprodDemoVpcArgs: vpcModule.VpcArgs = {
+    description: "Typescript pulumi vpc module non-prod",
+    
     instanceTenancy: "default",
 
     vpcCidr: "10.0.0.0/16",
-
     publicSubnetsCidrs: ["10.0.1.0/24", "10.0.2.0/24"],
     privateSubnetsCidrs: ["10.0.3.0/24", "10.0.4.0/24"],
 
-    vpcSecurityGroupName: "sg-1",
+    vpcSecurityGroupName: "sg-non-prod",
     // internetGatewayId: "igw-1",
     
     enableDnsHostnames: true,
@@ -22,14 +23,15 @@ export const nonprodDemoVpcArgs: vpcModule.VpcArgs = {
 };
 
 export const prodDemoVpcArgs: vpcModule.VpcArgs = {
+    description: "Typescript pulumi vpc module prod",
+
     instanceTenancy: "default",
 
     vpcCidr: "192.168.0.0/16",
-
     publicSubnetsCidrs: ["192.168.1.0/24", "192.168.2.0/24"],
     privateSubnetsCidrs: ["192.168.3.0/24", "192.168.4.0/24"],
 
-    vpcSecurityGroupName: "sg-2",
+    vpcSecurityGroupName: "sg-prod",
     // internetGatewayId: "igw-2",
     
     enableDnsHostnames: true,
