@@ -94,10 +94,10 @@ export class AwsWebVpc extends ComponentResource {
                 ...args.tags,
                 "Name": `${name}-igw`,
             },
-        });
+        }, { parent: this.vpc });
 
         // For each cidr in the publicSubnetsCidrs array, create a public subnet
-        for (let i = 0; i < args.availabilityZones.length; i++) {
+        for (let i = 0; i < args.publicSubnetsCidrs.length; i++) {
             const publicSubnet = new aws.ec2.Subnet(`${name}-public-subnet-${i}`, {
                 vpcId: this.vpc.id,
                 cidrBlock: args.publicSubnetsCidrs[i],
@@ -112,7 +112,7 @@ export class AwsWebVpc extends ComponentResource {
         }
 
         // For each cidr in the privateSubnetsCidrs array, create a private subnet
-        for (let i = 0; i < args.availabilityZones.length; i++) {
+        for (let i = 0; i < args.privateSubnetsCidrs.length; i++) {
             const privateSubnet = new aws.ec2.Subnet(`${name}-private-subnet-${i}`, {
                 vpcId: this.vpc.id,
                 cidrBlock: args.privateSubnetsCidrs[i],
