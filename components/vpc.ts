@@ -78,7 +78,7 @@ export class AwsWebVpc extends ComponentResource {
         // Set the name of the VPC
         this.name = name;
 
-        this.vpc = new aws.ec2.Vpc(name, {
+        this.vpc = new aws.ec2.Vpc(`${name}-vpc`, {
             cidrBlock: args.vpcCidr,
             enableDnsHostnames: true,
             enableDnsSupport: true,
@@ -100,7 +100,7 @@ export class AwsWebVpc extends ComponentResource {
         for (let i = 0; i < args.availabilityZones.length; i++) {
             const publicSubnet = new aws.ec2.Subnet(`${name}-public-subnet-${i}`, {
                 vpcId: this.vpc.id,
-                cidrBlock: args.vpcCidr,
+                cidrBlock: args.publicSubnetsCidrs[i],
                 availabilityZone: args.availabilityZones[i],
                 mapPublicIpOnLaunch: true,
                 tags: {
@@ -115,7 +115,7 @@ export class AwsWebVpc extends ComponentResource {
         for (let i = 0; i < args.availabilityZones.length; i++) {
             const privateSubnet = new aws.ec2.Subnet(`${name}-private-subnet-${i}`, {
                 vpcId: this.vpc.id,
-                cidrBlock: args.vpcCidr,
+                cidrBlock: args.privateSubnetsCidrs[i],
                 availabilityZone: args.availabilityZones[i],
                 mapPublicIpOnLaunch: false,
                 tags: {
