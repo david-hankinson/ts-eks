@@ -59,19 +59,6 @@ export class AwsWebVpc extends ComponentResource {
         return this.vpc.id;
     }
 
-    //public readonly vpcCidr: .Output<string>;
-    //public readonly publicSubnetsCidrs: .Output<string>[] = [];
-    //public readonly privateSubnetsCidrs: .Output<string>[] = [];
-    //public readonly publicSubnets: { [key: string]: aws.ec2.Subnet } = {};
-    //public readonly privateSubnets: { [key: string]: aws.ec2.Subnet } = {};
-
-
-    //public readonly vpcSecurityGroupId: .Output<string>;
-    //public readonly vpcSecurityGroupName: .Output<string>;
-
-    //public readonly internetGatewayId: .Output<string>;
-    //public readonly natGateways: { [key: string]: aws.ec2.NatGateway } = {};
-
     constructor(name: string, args: VpcArgs, opts?: ComponentResourceOptions) {
         super("custom:resource:VPC", name, args, opts);
 
@@ -192,160 +179,12 @@ export class AwsWebVpc extends ComponentResource {
             }, { parent: this.privateRouteTables[i] });
         }
 
-
-
-
-        // const instanceTenancy = args.instanceTenancy || "default";
-
-        // const vpcName = `${name}-vpc`;
-        // const cidrBlock = args.vpcCidr || "10.0.0.0/16";
-
-        // const publicSubnetsCidrs = args.publicSubnetsCidrs
-        // const privateSubnetsCidrs = args.privateSubnetsCidrs
-
-        // // VPC
-        // const vpc = new aws.ec2.Vpc(vpcName, {
-        //     cidrBlock: cidrBlock,
-        //     instanceTenancy: instanceTenancy,
-        //     enableDnsHostnames: true,
-        //     enableDnsSupport: true,
-        //     tags: { "Name": vpcName },
-        // }, { parent: this });
-
-        // this.vpcId = vpc.id;
-
-        // console.log("VPC Object: ", vpc); 
-
-        // // Create public subnets
-        // this.publicSubnets = {};
-        // for (let i = 0; i < args.publicSubnetsCidrs.length; i++) {
-        //     const subnetCidr = args.publicSubnetsCidrs[i];
-        //     const subnetName = `${name}-public-subnet-${i + 1}`;
-
-        //     // Create a new public subnet and add it to the publicSubnets object with a unique key
-        //     this.publicSubnets[subnetName] = new aws.ec2.Subnet(subnetName, {
-        //         vpcId: vpc.id,
-        //         cidrBlock: subnetCidr,
-        //         availabilityZone: aws.getAvailabilityZones().then(azs => azs.names[i]),
-        //         mapPublicIpOnLaunch: true,
-        //         tags: { "Name": subnetName },
-        //     }, { parent: this });
-        // }
-        // // Create public subnets and NAT Gateways
-
-        //     // Subnets, at least across two zones
-        //     const allZones = aws.getAvailabilityZones({state: "available"});
-        //     // Limiting to 2 zones for speed and to meet minimal requirements.
-        //     const subnets: .Output<string>[] = [];
-        //     const subnetNameBase = `${name}-subnet`;
-        //     // Non-prod subnets
-        //     for (let i = 0; i < 2; i++) {
-        //         const az = allZones.then(it => it.zoneIds[i]);
-        //         const subnetName = `${subnetNameBase}-nonprod-${i}`;
-        //         const vpcSubnet = new aws.ec2.Subnet(subnetName, {
-        //         assignIpv6AddressOnCreation: false,
-        //         vpcId: vpc.id,
-        //         mapPublicIpOnLaunch: true,
-        //         cidrBlock: args.publicSubnetsCidrs[i],
-        //         availabilityZoneId: az,
-        //         tags: { "Name": subnetName },
-        //         }, { parent: this });
-        //         subnets.push(vpcSubnet.id);
-        //     }
-
-        //     // Prod subnets
-        //     for (let i = 0; i < 2; i++) {
-        //         const az = allZones.then(it => it.zoneIds[i]);
-        //         const subnetName = `${subnetNameBase}-prod-${i}`;
-        //         const vpcSubnet = new aws.ec2.Subnet(subnetName, {
-        //         assignIpv6AddressOnCreation: false,
-        //         vpcId: vpc.id,
-        //         mapPublicIpOnLaunch: true,
-        //         cidrBlock: args.privateSubnetsCidrs[i],
-        //         availabilityZoneId: az,
-        //         tags: { "Name": subnetName },
-        //         }, { parent: this });
-        //         subnets.push(vpcSubnet.id);
-        //     }
-
-        // // Return private subnet ids as a string
-        // // const privateSubnetIdsString = .all(privateSubnetIds).apply(ids => ids.join(","));
-        // const publicSubnetIdsString = .all(Object.values(this.publicSubnets).map(subnet => subnet.id)).apply(ids => ids.join(","));
-        // // Internet Gateway
-        // const igw = new aws.ec2.InternetGateway(`${name}-igw`, {
-        //     vpcId: vpc.id,
-        //     tags: { "Name": `${name}-igw` },
-        // }, { parent: this });
-
-        // // Elastic IP
-
-        // const eip = new aws.ec2.Eip(`${name}-eip`, {
-        //     domain: "vpc",
-        // }, { parent: this });
-
-        // // NAT Gateways   
-        // this.natGateways = {};
-        // for (let i = 0; i < Object.keys(this.publicSubnets).length; i++) {
-        //     // create a nat gateway for each public subnet
-
-        //     const natGateway = new aws.ec2.NatGateway(`${name}-nat-gateway-${i + 1}`, {
-        //         allocationId: eip.id,
-        //         subnetId: publicSubnetIdsString.apply(ids => ids.split(",")[i]),
-        //         tags: { "Name": `${name}-nat-gateway-${i + 1}` },
-        //     }, { parent: this });
-        //     this.natGateways[`${name}-nat-gateway-${i + 1}`] = natGateway;
-        // }
-
-        // // Public Route table
-        // const publicRouteTable = new aws.ec2.RouteTable(`${name}-public-route-table`, {
-        //     vpcId: vpc.id,
-        //     routes: [{
-        //         cidrBlock: "0.0.0.0/0",
-        //         gatewayId: igw.id,
-        //     }],
-        //     tags: { "Name": `${name}-public-route-table` },
-        // }, { parent: this });
-
-        // // Private Route table
-        // const privateRouteTable = new aws.ec2.RouteTable(`${name}-private-route-table`, {
-        //     vpcId: vpc.id,
-        //     tags: { "Name": `${name}-private-route-table` },
-        // }, { parent: this });
-
-        // // Public Route table association
-        // for (const [index, subnet] of Object.entries(this.publicSubnets)) {
-        //     const publicRouteTableAssociation = new aws.ec2.RouteTableAssociation(`${name}-public-route-table-association-${index}`, {
-        //         subnetId: subnet.id,
-        //         routeTableId: publicRouteTable.id,
-        //     }, { parent: this });
-        // }
-
-        // // Private Route table association
-        // for (const [index, subnet] of Object.entries(this.privateSubnets)) {
-        //     const privateRouteTableAssociation = new aws.ec2.RouteTableAssociation(`${name}-private-route-table-association-${index}`, {
-        //         subnetId: subnet.id,
-        //         routeTableId: privateRouteTable.id,
-        //     }, { parent: this });
-        // }
-
-        // Security Group
-
         this.vpcSecurityGroup = new aws.ec2.SecurityGroup(`${args.vpcSecurityGroupName}`, {
             name: "allow_tls",
             description: "Allow TLS inbound traffic and all outbound traffic",
             vpcId: this.vpc.id,
             tags: { "Name": `${name}-vpc-sg` },
         });
-
-        // this.vpcId = vpc.id;
-        // this.vpcCidr = vpc.cidrBlock;
-        // //this.natGatewayId = natGateway.id;
-        // this.vpcSecurityGroupName = vpcSecurityGroup.name;
-        // this.vpcSecurityGroupId = vpcSecurityGroup.id;
-        // // this.internetGatewayId = igw.id;
-
     }
-
-
 }
 
