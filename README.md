@@ -1,28 +1,5 @@
-## Instant Infrastructure for Business Growth
+# "Deploy Like DevOps: React-Style IaC with Pulumi TypeScript"
 
-### Project Goals
-
-- Provide an easier-to-use alternative for application development teams who want to build infrastructure for their apps to run on.
-- Show how this approach could be utilized in businesses from startup to enterprise.
-
--------
-
-### Skills Required
-
-- **Terraform** AND/OR **TypeScript**
-- **AWS**
-
-> **IMPORTANT:** You can do this with teams made up of easy to find skillsets!
-
--------
-
-These skills are widespread in the industry and work well for companies trying to build productive teams.
-
-This approach significantly reduces the lines of code and complexity needed to deploy infrastructure. You can do this in [Terraform](https://www.terraform.io/) and TypeScript, using [Pulumi](https://www.pulumi.com/). This approach also suits many other tools and languages! I'll build more projects in the future.
-
---------
-
-### What does the result look like?
-
+Imagine deploying your AWS infrastructure as effortlessly as you build React components. With our Pulumi TypeScript project, you can do just that. Structured similarly to a React application, our project includes a components directory with modules like VPC, ALB, and EC2, all orchestrated through an index.ts file for seamless deployment via GitHub. This approach makes Infrastructure as Code (IaC) not only accessible but also production-ready for React developers, offering a familiar pattern for managing complex cloud environments.
 ![Infrastructure Diagram](./diagram.png)
 
