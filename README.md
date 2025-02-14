@@ -1,28 +1,16 @@
-## Instant Infrastructure for Business Growth
+# React-Style cloud Infrastructure as code with Pulumi TypeScript
 
-### Project Goals
+Would it be useful to you if you could deploy your AWS infrastructure as effortlessly as you build React components?
 
-- Provide an easier-to-use alternative for application development teams who want to build infrastructure for their apps to run on.
-- Show how this approach could be utilized in businesses from startup to enterprise.
+With this Pulumi TypeScript project, you can do just that. 
 
--------
+Like a React application, the project includes a components directory with modules like VPC, ALB, and EC2 to build a Kubernetes cluster on AWS. 
 
-### Skills Required
+Being modular, you can pass it different inputs and get different outputs. 
 
-- **Terraform** AND/OR **TypeScript**
-- **AWS**
+A lot of the current infrastructure of code that is written has a flat structure
 
-> **IMPORTANT:** You can do this with teams made up of easy to find skillsets!
+Each instance of a module has it's own persisence, but modules do need to be instantiated in a particular order. You need a network before you can build a server.
 
--------
-
-These skills are widespread in the industry and work well for companies trying to build productive teams.
-
-This approach significantly reduces the lines of code and complexity needed to deploy infrastructure. You can do this in [Terraform](https://www.terraform.io/) and TypeScript, using [Pulumi](https://www.pulumi.com/). This approach also suits many other tools and languages! I'll build more projects in the future.
-
---------
-
-### What does the result look like?
-
-![Infrastructure Diagram](./diagram.png)
+Additionaly, you can group a number of instances of a module into 'prod' and 'non-prod' environments.  
 
