@@ -1,4 +1,4 @@
-# React-Style cloud Infrastructure as code with Pulumi TypeScript"
+# React-Style cloud Infrastructure as code with Pulumi TypeScript
 
 Would it be useful to you if you could deploy your AWS infrastructure as effortlessly as you build React components?
 
