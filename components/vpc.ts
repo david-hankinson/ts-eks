@@ -64,8 +64,6 @@ export class AwsWebVpc extends ComponentResource {
         return this.internetGateway.id;
     }
 
-    
-
     constructor(name: string, args: VpcArgs, opts?: ComponentResourceOptions) {
         super("custom:resource:VPC", name, args, opts);
 

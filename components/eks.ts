@@ -55,17 +55,24 @@ export class AwsWebEc2 extends ComponentResource {
 
     eks: aws.eks.Cluster;
 
-    // asg: aws.autoscaling.Group;
+    asg = aws.autoscaling.Group;
+
+    ns = k8s.core.v1.Namespace;
+
+    appLabels: { [key: string]: string };
 
     // lc: aws.ec2.LaunchConfiguration;
+
+    deployment: k8s.apps.v1.Deployment;
 
 
     constructor(name: string, args: AsgArgs, opts?: ComponentResourceOptions) {
         super("custom:component:AwsWebEc2", name, {}, opts);
 
+        // Set the name of the EKS cluster
         this.name = name;
     
-        this.eks = new eks.Cluster(name, {
+        this.eks = new eks.Cluster(`${name}-eks-cluster`, {
             vpcId: args.vpcId,
             subnetIds: args.publicSubnets,
             authenticationMode: eks.AuthenticationMode.Api,
@@ -75,6 +82,35 @@ export class AwsWebEc2 extends ComponentResource {
             storageClasses: "gp2",
         });
 
+        this.ns = new k8s.core.v1.Namespace(`${name}-eks-ns`, {});
+
+        this.appLabels = { appClass: name };
+
+        this.deployment = new k8s.apps.v1.Deployment(`${name}-deployment`, {
+            metadata: {
+                namespace: this.ns.name,
+                labels: this.appLabels,
+            },
+            spec: {
+                replicas: 1,
+                selector: { matchLabels: this.appLabels },
+                template: {
+                    metadata: {
+                        labels: this.appLabels,
+                    },
+                    spec: {
+                        containers: [
+                            {
+                                name: name,
+                                image: "nginx:latest",
+                                ports: [{ name: "http", containerPort: 80 }],
+                            },
+                        ],
+                    },
+                },
+            },
+        },
+    );
         
 
 
