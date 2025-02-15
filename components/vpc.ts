@@ -14,6 +14,7 @@ export interface VpcArgs {
     // VPC CIDR
     vpcCidr: string
     publicSubnetsCidrs: string[];
+    
     privateSubnetsCidrs: string[];
 
     // VPC Security Group Name
@@ -58,6 +59,12 @@ export class AwsWebVpc extends ComponentResource {
     public vpcId(): Output<string> {
         return this.vpc.id;
     }
+
+    public internetGatewayId(): Output<string> {
+        return this.internetGateway.id;
+    }
+
+    
 
     constructor(name: string, args: VpcArgs, opts?: ComponentResourceOptions) {
         super("custom:resource:VPC", name, args, opts);
