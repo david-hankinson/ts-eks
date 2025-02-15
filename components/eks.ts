@@ -111,15 +111,6 @@ export class AwsWebEc2 extends ComponentResource {
             },
         },
     );
-        
 
-
-// o 
-    
-    // variables eg. vpc: aws.ec2.Vpc
-
-    // pulumi outputs
-    
-    // constructor
-
-        // 
+    }
+}

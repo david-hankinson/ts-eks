@@ -48,7 +48,6 @@ export async function main() {
     const stackNameNonProd = "non-prod";
     const stackNameProd = "prod";
     
-
     // Create or select non-prod stack
     const nonProdStack = await automation.LocalWorkspace.createOrSelectStack({
         stackName: stackNameNonProd,
