@@ -8,37 +8,40 @@ export interface AsgArgs {
     // Ec2 Description
     description: string;
 
+    // Vpc
+    // vpc: string;
+
     // Import vpc
-    vpcId: Input<String>;
+    vpcId: Input<string>;
 
     // Import public subnets
-    publicSubnets: Input<String>;
+    publicSubnets: Input<string>[];
 
     // Import private subnets
-    privateSubnets: Input<String>;
+    privateSubnets: Input<string>[];
     
-    // // Launch Configuration Name
-    // launchConfigurationName: string;
+    // // // Launch Configuration Name
+    // // launchConfigurationName: string;
 
-    // // Launch configuration 
-    // launchConfiguration: aws.ec2.LaunchConfiguration;
+    // // // Launch configuration 
+    // // launchConfiguration: aws.ec2.LaunchConfiguration;
 
-    // AWS Account ID is inputed here
-    instanceTenancy?: string;
+    // // AWS Account ID is inputed here
+    // instanceTenancy?: string;
 
-    // Availability Zones
-    availabilityZones: string[];
+    // // Availability Zones
+    // availabilityZones: string[];
     
-    // // Instance Type
-    // instanceType: string;
+    // // // Instance Type
+    // // instanceType: string;
 
-    // // Ami Id
-    // ami: string;
+    // // // Ami Id
+    // // ami: string;
 
-    // // ec2 security groups
-    // ec2SecurityGroups: string[];
+    // // // ec2 security groups
+    // // ec2SecurityGroups: string[];
     
-    tags?: aws.Tags
+    // tags?: aws.Tags
 }
 
 
@@ -47,13 +50,9 @@ export class AwsWebEc2 extends ComponentResource {
 
     private name: string;
 
-    vpc: AwsWebVpc["vpcId"];
+    vpcId: Input<String>;
 
-    privateSubnets: AwsWebVpc["privateSubnetIds"];
-
-    publicSubnets: AwsWebVpc["publicSubnetIds"];
-
-    eks: aws.eks.Cluster;
+    eks: eks.Cluster;
 
     asg = aws.autoscaling.Group;
 
@@ -67,11 +66,13 @@ export class AwsWebEc2 extends ComponentResource {
 
 
     constructor(name: string, args: AsgArgs, opts?: ComponentResourceOptions) {
-        super("custom:component:AwsWebEc2", name, {}, opts);
+        super("custom:component:AwsWebVpc", name, {}, opts);
 
         // Set the name of the EKS cluster
         this.name = name;
     
+        this.vpcId = args.vpcId;
+
         this.eks = new eks.Cluster(`${name}-eks-cluster`, {
             vpcId: args.vpcId,
             subnetIds: args.publicSubnets,
@@ -82,7 +83,7 @@ export class AwsWebEc2 extends ComponentResource {
             storageClasses: "gp2",
         });
 
-        this.ns = new k8s.core.v1.Namespace(`${name}-eks-ns`, {});
+        // this.ns = new k8s.core.v1.Namespace(`${name}-eks-ns`, {});
 
         this.appLabels = { appClass: name };
 

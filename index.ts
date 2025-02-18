@@ -1,9 +1,12 @@
 #!/usr/bin/node
-
 import * as vpcModule from "./components/vpc"
+import * as eksModule from "./components/eks"
 import * as automation from "@pulumi/pulumi/automation";
+import { config } from "process";
 
-
+/**
+ * Non-prod configuration
+ */
 export const nonprodDemoVpcArgs: vpcModule.VpcArgs = {
     description: "Typescript pulumi vpc module non-prod",
     
@@ -22,6 +25,20 @@ export const nonprodDemoVpcArgs: vpcModule.VpcArgs = {
 
     tags: { "Name": "non-prod-vpc" }
 };
+
+export const nonProdEksArgs: eksModule.AsgArgs = {
+    // Ec2 Description
+    description: "Helloworld non-prod eks cluster",
+
+    vpcId: "",
+    publicSubnets: ["subnet-12345678", "subnet-23456789"],
+    privateSubnets: ["subnet-34567890", "subnet-45678901"]
+}
+
+
+/**
+ * Prod configuration
+ */
 
 export const prodDemoVpcArgs: vpcModule.VpcArgs = {
     description: "Typescript pulumi vpc module prod",
@@ -42,15 +59,14 @@ export const prodDemoVpcArgs: vpcModule.VpcArgs = {
     tags: { "Name": "demo-vpc" }
 };
 
-export async function main() {
+export async function buildNonProd() {
     // Initialize a new workspace
     const projectName = "ts-modular-eks-iac"
-    const stackNameNonProd = "non-prod";
-    const stackNameProd = "prod";
+    const stackName = "non-prod";
     
     // Create or select non-prod stack
-    const nonProdStack = await automation.LocalWorkspace.createOrSelectStack({
-        stackName: stackNameNonProd,
+    const nonProdVpc = await automation.LocalWorkspace.createOrSelectStack({
+        stackName: stackName,
         projectName: projectName,
         program: async () => {
             // Component resource definition goes here
@@ -58,24 +74,56 @@ export async function main() {
         }
     });
 
-    // Create or select prod stack
-    const prodStack = await automation.LocalWorkspace.createOrSelectStack({
-        stackName: stackNameProd,
-        projectName: projectName,
-        program: async () => {
-            // Your component resource definition goes here
-            // Example:
-            new vpcModule.AwsWebVpc("prod", prodDemoVpcArgs);;
-        }
-    });
+    // Up the VPC stack
+    await nonProdVpc.up({});
 
-    // Optionally, run an update for each stack
-    await nonProdStack.up({ onOutput: console.log });
-    await prodStack.up({ onOutput: console.log });
+    // Get outputs from VPC stack
+    const nonProdVpcOutputs = await nonProdVpc.outputs();
 
+    const nonProdEks = await automation.LocalWorkspace.createOrSelectStack({
+        stackName: stackName,
+         projectName: projectName,
+
+         program: async () => {
+        // Component resource definition goes here
+             new eksModule.AwsWebEc2("non-prod", nonProdEksArgs);
+             config: vpcId: nonProdVpcOutputs.vpcId
+         },
+//        config: {
+//             "vpcId": { value: nonProdVpcOutputs.vpcId }
+//         }
+    })
+
+    await nonProdEks.up({});
+    
+    const nonProdEksOutputs = await nonProdEks.outputs();
+
+//     const nonProdEks = await automation.LocalWorkspace.createOrSelectStack({
+//         stackName: stackName,
+//         projectName: projectName,
+
+//         program: async () => {
+//         // Component resource definition goes here
+//             new eksModule.AwsWebEc2("non-prod", nonProdEksArgs);
+//         },
+//         config: {
+//             "vpcId": { value: nonProdVpcOutputs.vpcId }
+//         }
+// });
+
+    // // Create or select prod stack
+    // const prodStack = await automation.LocalWorkspace.createOrSelectStack({
+    //     stackName: stackNameProd,
+    //     projectName: projectName,
+    //     program: async () => {
+    //         // Your component resource definition goes here
+    //         // Example:
+    //         new vpcModule.AwsWebVpc("prod", prodDemoVpcArgs);;
+    //     }
+    // });
     console.log("Stacks have been updated.");
 }
 
-main().then(() => console.log("Done!"));
+buildNonProd().then(() => console.log("Done!"));
 //main().catch(err => console.error(err));
 
